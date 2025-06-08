@@ -1,0 +1,20 @@
+@startuml Context
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(customer, "Клиент", "Пользователь сайта или интернет-банка")
+System(internetBank, "Интернет-банк", "Позволяет клиентам подавать заявки на депозит")
+System(website, "Сайт банка", "Публичный сайт с формой заявки на депозит")
+System_Ext(callCenterSystem, "Система кол-центра", "Обрабатывает заявки с сайта")
+System(queueSystem, "Система заявок (временная очередь)", "Сохраняет заявки из интернет-банка для обработки")
+System(backOffice, "Бэк-офис депозитов", "Обрабатывает заявки вручную и регистрирует депозиты в АБС")
+System(abs, "АБС", "Основная банковская система для учета операций (Delphi + Oracle)")
+
+Rel(customer, internetBank, "Подает заявку на депозит")
+Rel(customer, website, "Оставляет заявку на звонок")
+
+Rel(internetBank, queueSystem, "Записывает заявку", "SQL или REST")
+Rel(website, callCenterSystem, "Отправляет заявку", "Email / API")
+
+Rel(queueSystem, backOffice, "Просматривает заявки", "Внутренний интерфейс или выгрузка")
+Rel(backOffice, abs, "Вносит данные о депозите", "Ручной ввод через интерфейс АБС")
+@enduml
