@@ -1,0 +1,14 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(agent, "Оператор колл-центра", "Сотрудник банка")
+Person(partnerAgent, "Оператор партнёрского колл-центра")
+System(callCenter, "Система колл-центра", "Содержит экран с текущими ставками")
+System(website, "Сайт банка", "Источник ставок")
+System_Ext(partnerSystem, "Внешняя система партнёрского колл-центра", "Получает файл со ставками")
+
+Rel(agent, callCenter, "Смотрит ставки")
+Rel(callCenter, website, "Получает ставки через API/файл")
+Rel(website, partnerSystem, "Экспортирует файл ставок")
+Rel(partnerAgent, partnerSystem, "Читает файл")
+@enduml
