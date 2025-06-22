@@ -1,0 +1,58 @@
+@startuml Containers
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(customer, "Клиент", "Пользователь сайта или интернет-банка")
+
+System_Boundary(internetBank, "Интернет-банк (.NET)") {
+   Container(webApp, "Веб-приложение", "ASP.NET MVC 4.5", "Позволяет подавать заявку на депозит")
+   Container(sqlDb, "База данных интернет-банка", "MS SQL", "Хранит заявки")
+}
+
+System_Boundary(websiteSystem, "Сайт") {
+   Container(websiteApp, "Веб-сайт", "PHP + React.js", "Публичная форма заявки")
+}
+
+System_Boundary(callCenterSys, "Система кол-центра") {
+   Container(callCenterUi, "UI", "React.js", "Интерфейс операторов")
+   Container(callCenterApi, "API", "Spring Boot", "Обработка заявок")
+   Container(callCenterDb, "База данных", "PostgreSQL", "Хранение заявок и логов")
+}
+
+System_Boundary(abs, "АБС") {
+   Container(absUi, "Delphi UI", "Delphi", "Интерфейс для ручного ввода")
+   Container(absDb, "База данных", "Oracle", "Учет депозитов")
+}
+
+System_Boundary(backOfficeSystem, "Депозитный бэк-офис") {
+  Container(depositeApi, "Deposite Api", "Delphi", "Интерфейс для ручного ввода")
+  Container(depositeDb, "Deposite DB", "Oracle", "БД")
+  Container(topicDepositeInput, "Topic Deposite Input", "Kafka","События")
+  Container(topicDepositeOutput, "Topic Deposite Output", "Kafka","События")
+}
+
+Container(gatewayApi, "Gateway Api", "Golang", "Gateway")
+
+Rel(customer, webApp, "Взаимодействует с", "HTTP")
+
+Rel(webApp, gatewayApi, "Заявки обрабатываются вручную", "Через интерфейс/выгрузку")
+Rel(websiteApp, gatewayApi, "Вносит вручную")
+
+Rel(gatewayApi, topicDepositeInput, "Отправляет заявку")
+Rel(gatewayApi, callCenterApi, "Отправляет заявку", "REST")
+Rel(gatewayApi, abs, "Отправляет заявку", "REST")
+
+Rel(webApp, sqlDb, "Читает и пишет", "ADO.NET / SQL")
+
+Rel(customer, websiteApp, "Заполняет форму", "HTTP")
+Rel(callCenterApi, callCenterDb, "Записывает данные", "JPA/SQL")
+Rel(callCenterUi, callCenterApi, "Получает заявки", "REST")
+
+Rel(depositeApi, depositeDb, "Взаимодействует с", "HTTP")
+
+Rel(topicDepositeInput, depositeApi, "Kafka", "События")
+Rel(depositeApi, topicDepositeOutput, "Kafka", "События")
+Rel(topicDepositeOutput, depositeApi, "Kafka", "События")
+
+Rel(backOfficeSystem, absUi, "Обмен данными")
+Rel(absUi, absDb, "Читает и пишет", "PL/SQL")
+@enduml
