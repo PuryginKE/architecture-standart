@@ -23,17 +23,36 @@ System_Boundary(abs, "АБС") {
    Container(absDb, "База данных", "Oracle", "Учет депозитов")
 }
 
-System(backOffice, "Депозитный бэк-офис")
+System_Boundary(backOfficeSystem, "Депозитный бэк-офис") {
+  Container(depositeApi, "Deposite Api", "Delphi", "Интерфейс для ручного ввода")
+  Container(depositeDb, "Deposite DB", "Oracle", "БД")
+  Container(topicDepositeInput, "Topic Deposite Input", "Kafka","События")
+  Container(topicDepositeOutput, "Topic Deposite Output", "Kafka","События")
+}
+
+Container(gatewayApi, "Gateway Api", "Golang", "Gateway")
 
 Rel(customer, webApp, "Взаимодействует с", "HTTP")
+
+Rel(webApp, gatewayApi, "Заявки обрабатываются вручную", "Через интерфейс/выгрузку")
+Rel(websiteApp, gatewayApi, "Вносит вручную")
+
+Rel(gatewayApi, topicDepositeInput, "Отправляет заявку")
+Rel(gatewayApi, callCenterApi, "Отправляет заявку", "REST")
+Rel(gatewayApi, abs, "Отправляет заявку", "REST")
+
 Rel(webApp, sqlDb, "Читает и пишет", "ADO.NET / SQL")
-Rel(webApp, backOffice, "Заявки обрабатываются вручную", "Через интерфейс/выгрузку")
 
 Rel(customer, websiteApp, "Заполняет форму", "HTTP")
-Rel(websiteApp, callCenterApi, "Отправляет заявку", "REST")
 Rel(callCenterApi, callCenterDb, "Записывает данные", "JPA/SQL")
 Rel(callCenterUi, callCenterApi, "Получает заявки", "REST")
 
-Rel(backOffice, absUi, "Вносит вручную")
+Rel(depositeApi, depositeDb, "Взаимодействует с", "HTTP")
+
+Rel(topicDepositeInput, depositeApi, "Kafka", "События")
+Rel(depositeApi, topicDepositeOutput, "Kafka", "События")
+Rel(topicDepositeOutput, depositeApi, "Kafka", "События")
+
+Rel(backOfficeSystem, absUi, "Обмен данными")
 Rel(absUi, absDb, "Читает и пишет", "PL/SQL")
 @enduml
